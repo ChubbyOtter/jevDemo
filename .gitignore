@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.cache/
+.env
+*.egg-info/
+
+# Personal app registry (contains your own apps) - android_runner/apps.example.json
+# is the checked-in template.
+android_runner/apps.json
+
+# Personal test cases (against apps/accounts not meant for the shared repo) -
+# prefix a case's filename with local_ to keep it out of git.
+tests/cases/local_*.txt

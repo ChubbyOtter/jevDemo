@@ -1,0 +1,19 @@
+[project]
+name = "android-runner"
+version = "0.1.0"
+description = "AI-native Android UI test runner (a11y tree + TypeSafe/Jev + Appium)"
+requires-python = ">=3.10"
+dependencies = [
+    "Appium-Python-Client>=4.0.0",
+    "typesafe-sdk>=0.5.0",
+    "anthropic>=0.60.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["android_runner*"]
