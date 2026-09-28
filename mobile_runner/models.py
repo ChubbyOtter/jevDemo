@@ -25,7 +25,14 @@ class CompiledStep:
 
 @dataclass(frozen=True)
 class Element:
-    """A candidate interactive element from the current a11y tree."""
+    """A candidate interactive element from the current a11y tree.
+
+    Platform-neutral: `mobile_runner/platforms/android.py` and `.../ios.py` each map
+    their own a11y tree's attributes onto these same fields (e.g. iOS has no
+    resource-id equivalent, so `resource_id` is always empty there). `bounds` is
+    always the shared `"[left,top][right,bottom]"` string from `mobile_runner/bounds.py`,
+    regardless of platform.
+    """
 
     index: str
     resource_id: str

@@ -76,7 +76,7 @@ class StepCompiler:
                     "credentials available to compile it live. Either set "
                     "ANTHROPIC_API_KEY, or pre-compile this test file offline "
                     "(e.g. have a coding agent write the record via "
-                    "android_runner.precompile) and rerun."
+                    "mobile_runner.precompile) and rerun."
                 ) from exc
 
         response = self._client.messages.parse(

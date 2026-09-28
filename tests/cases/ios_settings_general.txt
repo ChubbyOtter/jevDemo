@@ -1,0 +1,4 @@
+# Settings -> General (iOS system app, no personal account/app needed)
+Open the Settings app
+Tap the General row
+Verify the General settings screen is visible

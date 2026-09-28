@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import argparse
 import sys
-import time
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from .cache import CompileCache
 from .compiler import StepCompiler
-from .driver import AndroidDriver
+from .platforms import get_platform
 from .runner import run_test
 from .typesafe_client import Jev
 
@@ -23,12 +22,17 @@ def _discover_test_files(path: Path) -> list[Path]:
 def main() -> None:
     load_dotenv()
 
-    parser = argparse.ArgumentParser(description="AI-native Android UI test runner")
+    parser = argparse.ArgumentParser(description="AI-native mobile UI test runner")
     parser.add_argument(
         "path", type=Path, help="A single test step file, or a directory of them (run as a suite)"
     )
+    parser.add_argument("--platform", choices=["android", "ios"], default="android")
     parser.add_argument("--appium-url", default="http://127.0.0.1:4723")
-    parser.add_argument("--udid", default=None, help="Device UDID; auto-detected via `adb devices` if omitted")
+    parser.add_argument(
+        "--udid",
+        default=None,
+        help="Device UDID (Android) or simulator UDID (iOS); auto-detected if omitted",
+    )
     parser.add_argument("--cache-file", type=Path, default=Path(".cache/compiled_steps.json"))
     args = parser.parse_args()
 
@@ -37,12 +41,14 @@ def main() -> None:
         print(f"No test files found at {args.path}")
         sys.exit(2)
 
+    platform = get_platform(args.platform)
+
     # Shared across the whole suite: one Appium session, one TypeSafe client, one
     # compile cache - so a suite of many test cases pays for session/client startup
     # once, and every case benefits from every other case's already-compiled steps.
     cache = CompileCache(args.cache_file)
     compiler = StepCompiler(cache)
-    driver = AndroidDriver(udid=args.udid, appium_server_url=args.appium_url)
+    driver = platform.make_driver(args.udid, args.appium_url)
     jev = Jev()
 
     results: dict[Path, bool] = {}
@@ -51,11 +57,12 @@ def main() -> None:
             print(f"\n=== {test_file} ===")
             # Each test case gets a known starting state - one case failing or
             # leaving the device mid-navigation must never corrupt the next case's
-            # result. launch_app (if the case's own first step uses it) additionally
-            # force-restarts its app, so this covers cases that don't.
-            driver.go_home()
-            time.sleep(0.5)
-            results[test_file] = run_test(test_file, driver, jev, compiler)
+            # result. What this actually does differs per platform (see each
+            # driver's reset_for_isolation) - launch_app (if the case's own first
+            # step uses it) additionally force-restarts its app, so between them
+            # this covers cases that don't start with launch_app too.
+            driver.reset_for_isolation()
+            results[test_file] = run_test(test_file, driver, platform, jev, compiler)
     finally:
         driver.quit()
         jev.close()

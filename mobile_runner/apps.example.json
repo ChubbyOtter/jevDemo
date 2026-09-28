@@ -1,0 +1,10 @@
+{
+  "settings": {
+    "android": "com.android.settings",
+    "ios": "com.apple.Preferences"
+  },
+  "your app name": {
+    "android": "com.example.package",
+    "ios": "com.example.bundleid"
+  }
+}
